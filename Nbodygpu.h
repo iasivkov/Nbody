@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include <iostream>
+#include <math.h>
+#include <cmath>
+#include <time.h>
+#include <fstream>
+#include <stdexcept>
+#include "Nbodygpu.cuh"
+#include "specialfunctions.h"
+#include "integration.h"
+#include "statistics.h"
+#include "tools.h"
