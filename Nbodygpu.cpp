@@ -30,6 +30,7 @@ float orb;
 
 float Qt =  1.5;
 float rho0= Md/(4.0*PI*h*h*z0);
+float rho0_thin = Md/(2*PI*h*h);
 //хар-ки гало
 float gam = 1.0;
 float rc = 10.0;//радиус обрезания
@@ -120,17 +121,50 @@ float Q(float r)
 	
 			//гало, балдж, диск все компоненты
 			//if(r<0.01)return -r;
-			int L=r/R*10000;
-			if(r==R)L=9999;
-			r=(L+1.0)*R/10000.0;
+			float step = R*0.0001;
+			int L=r/step;
+			
 			float sum = 0;
-			/*for(int i = 0; i<=L; i++)
+			for(int i = 0; i<=L; i++)
 				{
 					sum += Bin[i];
-				}*/
-			return -G*Bin[L]/r;
+				}
+			return -G*sum/((L+1.0)*step);
 		
 	
+
+	
+}
+
+float dQ(float r)
+{			
+	//гало, балдж
+	float step = R*0.0001;
+	int L=r/step;
+
+	float sum=0.0;
+	for(int i = 0; i<=L; i++)
+	{
+		sum += Bin[i];
+	}
+	return G*sum/((L+1.0)*step)/((L+1.0)*step);
+
+	
+}
+
+float ddQ(float r)
+{			
+	//гало, балдж
+	float step = R*0.0001;
+	int L=r/step;
+
+		float sum=0.0;
+	for(int i = 0; i<=L; i++)
+	{
+		sum += Bin[i];
+	}
+
+	return -2*G*sum/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
 
 	
 }
@@ -138,17 +172,45 @@ float Q(float r)
 float Q2(float r)
 {			
 	//гало, балдж
-		float step = R*0.0001;
-			//if(r<0.01)return -r;
-			int L=r/step;
-			//if(r == R)L=9999;
-			//r=(L+1.0)*R/10000.0;
-			//float sum = 0;
-			/*for(int i = 0; i<=L; i++)
-				{
-					sum += Bin3[i];
-				}*/
-			return -G*Bin2[L]/((L+1.0)*step);
+	float step = R*0.0001;
+	int L=r/step;
+	float sum=0.0;
+	for(int i = 0; i<=L; i++)
+	{
+		sum += Bin2[i];
+	}
+	return -G*sum/((L+1.0)*step);
+
+	
+}
+
+float dQ2(float r)
+{			
+	//гало, балдж
+	float step = R*0.0001;
+	int L=r/step;
+
+	float sum=0.0;
+	for(int i = 0; i<=L; i++)
+	{
+		sum += Bin2[i];
+	}
+	return G*sum/((L+1.0)*step)/((L+1.0)*step);
+
+	
+}
+
+float ddQ2(float r)
+{			
+	//гало, балдж
+	float step = R*0.0001;
+	int L=r/step;
+	float sum=0.0;
+	for(int i = 0; i<=L; i++)
+	{
+		sum += Bin2[i];
+	}
+	return -2*G*sum/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
 
 	
 }
@@ -281,6 +343,18 @@ void disk_potential_second_derivation(double k, double xminusa, double bminusx, 
    y = 2.0*PI*G*rho0*h*h*2.0*z0 * (alglib::besselj0(k*r_for_potential) - alglib::besselj1(k*r_for_potential)/(k*r_for_potential)) * k*k * exp(-k*fabs(z_for_potential)) * sqrt(1 + k*k * h*h)/((1 + k*k * h*h)*(1 + k*k * h*h));
 }
 
+float thin_dQ(float r, float z)
+{
+	4*PI*G*rho0*r/(2*h)*(alglib::besseli0(r/(2*h))*alglib::besselk0(r/(2*h)) - alglib::besseli1(r/(2*h))*alglib::besselk1(r/(2*h)));
+}
+float thin_ddQ(float r, float z)
+{
+	4*PI*G*rho0/(2*h)*
+	(
+		alglib::besseli1(r/(2*h))*(r*alglib::besselk0(r/(2*h)) + h*alglib::besselk1(r/(2*h)))
+		+ alglib::besseli0(r/(2*h))*(h*alglib::besselk0(r/(2*h)) - r*alglib::besselk1(r/(2*h)))
+	);
+}
 
 double Qd(double r,double z)
 {
@@ -726,17 +800,17 @@ float sigma2(float r,int p, int k)
 
 	//if(r < 4.0*h/3.0 && p==1) sum =( Rhoh(r) * G * fabsf(Q3(r))/r + Rhoh(R) * G * fabsf(Q3(R))/R)/2.0; 
 	//if(p==1) sum =( Rhoh(r)  * (-Q3(r))/r + Rhoh(R) *  (-Q3(R))/R)/2.0;
-	if(p==1) sum =( Rhoh(r)  * (dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhoh(R) *  (dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQtot(r) + Rhoh(R) *  dQtot(R))/2.0;
-    if(p==2) sum =( Rhob(r)  * (dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhob(R) *  (dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQtot(r) + Rhoh(R) *  dQtot(R))/2.0;
+	if(p==1) sum =( Rhoh(r)  * (thin_dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhoh(R) *  (thin_dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQ2(r) + Rhoh(R) *  dQtot(R))/2.0;
+    if(p==2) sum =( Rhob(r)  * (thin_dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhob(R) *  (thin_dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQtot(r) + Rhoh(R) *  dQtot(R))/2.0;
 	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
-	int n = 60;
+	int n = 100;
 	for(int i=1; i<n;i++)
 	{
 		//if(r < 4.0*h/3.0 && p==1) sum += Rhoh(i*(R-r)/n + r) * G * fabsf(Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
 		//if(p==1) sum += Rhoh(i*(R-r)/n + r)  * (-Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==1) sum += Rhoh(i*(R-r)/n + r)  * dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhoh(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==2)  sum += Rhob(i*(R-r)/n + r)  * dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhob(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
+		if(p==1) sum += Rhoh(i*(R-r)/n + r)  * thin_dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhoh(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
+		if(p==2)  sum += Rhob(i*(R-r)/n + r)  * thin_dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhob(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
 		if(p==3) sum += Rhos(i*(Rs-r)/n + r) * (-Qs(i*(Rs-r)/n + r))/(i*(Rs-r)/n + r);
 	}
 
@@ -885,11 +959,8 @@ void    InitParticles()
 			
 			//printf("%f\t%f\t%f\t%f", Mumd, Mur, r, z);
 			
-			int l = r/R*10000;
-
-
-
-			int l2=r*0.35/R*10000;
+			int l = 0.35*r/R*10000;
+			//int l2=r*0.35/R*10000;
 			
 			//Bin3[l2] += X[k].w;
 			//if(r==R)l=999;
@@ -897,12 +968,12 @@ void    InitParticles()
 			{
 				for(int i=-3;i<10000-l;i++)
 				{	
-				int l=(r/R*10000  + i);
+				int m=(l  + i);
 				
-				 Bin[l] +=X[k].w/(3.0 + 10000.0 - l);
+				 Bin[m] +=X[k].w/(3.0 + 10000.0 - l);
 
 				//if(r>0.35*h*4.0)Bin3[l] += X[k].w/(3.0 + 10000.0 - l);
-				Bin3[l2] += X[k].w/(3.0 + 10000.0 - l);
+				//Bin3[l2] += X[k].w/(3.0 + 10000.0 - l);
 				
 				}
 			}
@@ -911,10 +982,10 @@ void    InitParticles()
 			
 				for(int i=-l;i<=3;i++)
 				{	
-					int l=(r/R*10000  + i);
-					Bin[l] += X[k].w/(l + 1.0 + 3.0 );
+					int m=(l + i);
+					Bin[m] += X[k].w/(l + 1.0 + 3.0 );
 					//if(r>0.35*h*4.0) Bin3[l] += X[k].w/(l + 1.0 + 3.0 );
-					Bin3[l2] += X[k].w/(l + 1.0 + 3.0 );
+					//Bin3[l2] += X[k].w/(l + 1.0 + 3.0 );
 					
 				}
 			}
@@ -922,11 +993,11 @@ void    InitParticles()
 			{
 				for(int i=-3;i<=3;i++)
 				{	
-					int l=(r/R*10000  + i);
-					Bin[l] +=  X[k].w/7.0;
+					int m=(l  + i);
+					Bin[m] +=  X[k].w/7.0;
 
 					//if(r>0.35*h*4.0)Bin3[l] += X[k].w/7.0;
-					Bin3[l2] += X[k].w/7.0;
+					//Bin3[l2] += X[k].w/7.0;
 				}
 			}
 			
@@ -1295,7 +1366,7 @@ void    InitParticles()
 				//float t = sqrt(X[k].x*X[k].x + X[k].y*X[k].y + X[k].z*X[k].z);
 				//float O = sqrt(dQ(r,0)/r);//sqrt((dQ(r,0) + G*(Mub(m)+Muh(t))/r/r)/r);
 				//float K =sqrt(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r)));
-				float K =sqrt(3.0*(dQ(r,0) - Q2(r)/r)/r + (ddQ(r,0) + 2.0*Q2(r)/r/r));
+				float K =sqrt(3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));
 				//float K =sqrt((3.0*(dQ(r,0) + G*(Mub(m)+Muh(t))/r/r)/r) + (ddQ(r,0)-2.0*G*(Mub(m)+Muh(t))/r/r/r));
 				ref += 3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)/K;
 					
@@ -1394,8 +1465,8 @@ void    InitParticles()
 			//float K =sqrt(fabs(3.0*(dQ2(r,0) + dQtot(r))/r + ddQ2(r,0)+ ddQtot(r)));//sqrt(fabs(3.0*( - Q(r)/r)/r + 2.0*Q(r)/r/r));//sqrt(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r)));//sqrt(fabs(3.0*(dQ(r,0) - Q2(r)/r)/r + (ddQ(r,0)+2.0*Q2(r)/r/r)));//sqrt(fabs(3.0*( - Q(r)/r)/r + 2.0*Q(r)/r/r));
 			//if(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r))<0.0)K=0.0;
 			
-			float O = sqrt(dQ(r,0)*r - Q2(r))/r;//sqrt(dQ2(r,0)*r)/r; //sqrt(dQ2(r,0)*r + dQtot(r))/r;//PI*sqrt(G*3.0*Md/(32.0*PI*h*h)/(8.0));//sqrt(1/r*(dQ(r,0) + dQtot(r)));//sqrt(1/r*(dQ(r,0) - Q2(r)/r));//sqrt(Vc2(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);//sqrt(-Q(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);
-			float K = sqrt(3.0*(dQ(r,0) - Q2(r)/r)/r + (ddQ(r,0) + 2.0*Q2(r)/r/r));
+			float O = sqrt(thin_dQ(r,0)*r + dQ2(r))/r;//sqrt(dQ2(r,0)*r)/r; //sqrt(dQ2(r,0)*r + dQtot(r))/r;//PI*sqrt(G*3.0*Md/(32.0*PI*h*h)/(8.0));//sqrt(1/r*(dQ(r,0) + dQtot(r)));//sqrt(1/r*(dQ(r,0) - Q2(r)/r));//sqrt(Vc2(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);//sqrt(-Q(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);
+			float K = sqrt(3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));
 			//float K =sqrt(2.0)*O;
 									
 			float VR2 = c0*c0*exp(-sqrt(r*r  + h*h/8)/h);//pow(1.5f*3.36 * G * Md/(2.0*PI*h*h) * exp(-r/h)/K,2.0);//pow(3.36 * G * surf/K,2.0);//(0.1*O*4.0)*(0.1*O*4.0);////c0*c0*exp(-sqrt(r*r + h*h/8.0)/h); //pow(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K * Qt, 2.0);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K*Qt;
@@ -1439,8 +1510,8 @@ void    InitParticles()
 			//sqrt(VR2)*K/(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h))
 			if (!is_valid(x) && !is_valid(y))
 			{
-				printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,O, K,dQ(r,0),dQtot(r),ddQ(r,0),ddQtot(r),3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r)));}
-			fprintf(out4,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,sqrt(VR2), sqrt(Vz2),sqrt(Vphi2),O,K,sqrt(VR2)*K/(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)),Qd(r,0));
+				printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,O, K,thin_dQ(r,0),dQtot(r),thin_ddQ(r,0),ddQtot(r),3.0*(thin_dQ(r,0) + dQtot(r))/r + (thin_ddQ(r,0) + ddQtot(r)));}
+			fprintf(out4,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,sqrt(VR2), sqrt(Vz2),sqrt(Vphi2),O,K,sqrt(VR2)*K/(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)),thin_dQ(r,0));
 			V[k].x = x ;
 			V[k].y = y ;
 			V[k].z = z;
