@@ -1279,7 +1279,7 @@ void    InitParticles()
 				//float K =sqrt(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r)));
 				float K =sqrt(3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));
 				//float K =sqrt((3.0*(dQ(r,0) + G*(Mub(m)+Muh(t))/r/r)/r) + (ddQ(r,0)-2.0*G*(Mub(m)+Muh(t))/r/r/r));
-				ref += 3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)/K;
+				ref += 3.36 * G * rho0_thin* exp(-r/h)/K;
 					
 					numref++;
 			}
@@ -1290,7 +1290,7 @@ void    InitParticles()
 	float Scrit = ref/(float)numref;
 
 
-	float c0 =Qt*Scrit/exp(-2.43/(2.0*h));
+	float c0 =Qt*Scrit/exp(-2.43/h);
 	
 
     //printf("halo %f\n%i\n%f\n%f\n",c0,numref, Md/(2.0*PI*h*h) *exp(-2.45/h),(float)numref*Md/NforDisc/(PI*(2.45 + h/30.0)*(2.45 + h/30.0) - PI*(2.45 - h/30.0)*(2.45 - h/30.0)) );
@@ -1380,14 +1380,14 @@ void    InitParticles()
 			float K = sqrt(3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));
 			//float K =sqrt(2.0)*O;
 									
-			float VR2 = c0*c0*exp(-sqrt(r*r  + h*h/8)/h);//pow(1.5f*3.36 * G * Md/(2.0*PI*h*h) * exp(-r/h)/K,2.0);//pow(3.36 * G * surf/K,2.0);//(0.1*O*4.0)*(0.1*O*4.0);////c0*c0*exp(-sqrt(r*r + h*h/8.0)/h); //pow(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K * Qt, 2.0);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K*Qt;
+			float VR2 = c0*c0*exp(-r/h);//pow(1.5f*3.36 * G * Md/(2.0*PI*h*h) * exp(-r/h)/K,2.0);//pow(3.36 * G * surf/K,2.0);//(0.1*O*4.0)*(0.1*O*4.0);////c0*c0*exp(-sqrt(r*r + h*h/8.0)/h); //pow(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K * Qt, 2.0);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//c0*c0*exp(-sqrt(r*r + h*h/8.0)/h);//3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/K*Qt;
 			
 			float Vphi2 = 0.0f;
 			//if(NforHalo + NforBulge==0) Vphi2 = pow(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/2.0/O , 2.0);//VR2*K*K/O/O/4;//pow(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h)/2.0/O , 2.0);
 			  //Vphi2 =VR2*K*K/O/O/4.0;
 			Vphi2 =VR2*K*K/O/O/4;//pow(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)/2.0/O,2.0);//pow(3.36 * G *surf/2.0/O,2.0);//(0.1*O*4.0)*(0.1*O*4.0);
 
-			float Vz2 = PI*G*rho0*2.0*z0*exp(-sqrt(r*r + h*h/8)/h)*z0;//0.25*Vphi2;// PI*G*rho0*2.0*z0*exp(-sqrt(r*r + h/8.0  )/h)*z0;//PI*G*rho0*2.0*z0*exp(-sqrt(r*r)/h)*z0;//PI*G*rho0*2.0*z0*exp(-sqrt(r*r + h*h/8.0)/h)*z0;
+			float Vz2 = PI*G*rho0_thin*exp(-sqrt(r*r)/h)*z0;//0.25*Vphi2;// PI*G*rho0*2.0*z0*exp(-sqrt(r*r + h/8.0  )/h)*z0;//PI*G*rho0*2.0*z0*exp(-sqrt(r*r)/h)*z0;//PI*G*rho0*2.0*z0*exp(-sqrt(r*r + h*h/8.0)/h)*z0;
 			float Vphis=0.0;
 			if(O*r*O*r + VR2 * (1 - K * K /(4.0 * O * O) - 2*r/h)<0.0)Vphis= 0.0f;
 			else  Vphis =sqrt(O*r*O*r + VR2 * (1 - K * K /(4.0 * O * O) - 2*r/h));
@@ -1415,7 +1415,7 @@ void    InitParticles()
 				if(k== NforDisc-1 )
 		{ 
 			fclose(out4); 
-			//system("pause");
+			system("pause");
 		}
 		}
 	
