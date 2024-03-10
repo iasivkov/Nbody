@@ -1272,7 +1272,7 @@ void    InitParticles()
 	for(int k=0; k<NforDisc; k++)
 	{
 		float r = sqrt(X[k].x*X[k].x + X[k].y*X[k].y);
-		if(2.43 - r < h/15.0 && 2.43 - r> -h/15.0 )
+		if(2.43 - r < h/20.0 && 2.43 - r> -h/20.0 )
 			{	
 				//float t = sqrt(X[k].x*X[k].x + X[k].y*X[k].y + X[k].z*X[k].z);
 				//float O = sqrt(dQ(r,0)/r);//sqrt((dQ(r,0) + G*(Mub(m)+Muh(t))/r/r)/r);
@@ -1290,7 +1290,7 @@ void    InitParticles()
 	float Scrit = ref/(float)numref;
 
 
-	float c0 =Qt*Scrit/exp(-2.43/h);
+	float c0 =Qt*Scrit/exp(-2.43/(2*h));
 	
 
     //printf("halo %f\n%i\n%f\n%f\n",c0,numref, Md/(2.0*PI*h*h) *exp(-2.45/h),(float)numref*Md/NforDisc/(PI*(2.45 + h/30.0)*(2.45 + h/30.0) - PI*(2.45 - h/30.0)*(2.45 - h/30.0)) );
@@ -1376,7 +1376,7 @@ void    InitParticles()
 			//float K =sqrt(fabs(3.0*(dQ2(r,0) + dQtot(r))/r + ddQ2(r,0)+ ddQtot(r)));//sqrt(fabs(3.0*( - Q(r)/r)/r + 2.0*Q(r)/r/r));//sqrt(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r)));//sqrt(fabs(3.0*(dQ(r,0) - Q2(r)/r)/r + (ddQ(r,0)+2.0*Q2(r)/r/r)));//sqrt(fabs(3.0*( - Q(r)/r)/r + 2.0*Q(r)/r/r));
 			//if(3.0*(dQ(r,0) + dQtot(r))/r + (ddQ(r,0) + ddQtot(r))<0.0)K=0.0;
 			
-			float O = sqrt(thin_dQ(r,0)*r + dQ2(r))/r;//sqrt(dQ2(r,0)*r)/r; //sqrt(dQ2(r,0)*r + dQtot(r))/r;//PI*sqrt(G*3.0*Md/(32.0*PI*h*h)/(8.0));//sqrt(1/r*(dQ(r,0) + dQtot(r)));//sqrt(1/r*(dQ(r,0) - Q2(r)/r));//sqrt(Vc2(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);//sqrt(-Q(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);
+			float O = sqrt(r*(thin_dQ(r,0) + dQ2(r)))/r;//sqrt(dQ2(r,0)*r)/r; //sqrt(dQ2(r,0)*r + dQtot(r))/r;//PI*sqrt(G*3.0*Md/(32.0*PI*h*h)/(8.0));//sqrt(1/r*(dQ(r,0) + dQtot(r)));//sqrt(1/r*(dQ(r,0) - Q2(r)/r));//sqrt(Vc2(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);//sqrt(-Q(r))/r;//sqrt(dQ(r,0)/r - Q2(r)/r/r);
 			float K = sqrt(3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));
 			//float K =sqrt(2.0)*O;
 									
@@ -1406,7 +1406,7 @@ void    InitParticles()
 			if (!is_valid(x) && !is_valid(y))
 			{
 				printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,O, K,thin_dQ(r,0),dQ(r),thin_ddQ(r,0),ddQ2(r),3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));}
-			fprintf(out4,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,sqrt(VR2), sqrt(Vz2),sqrt(Vphi2),O,K,sqrt(VR2)*K/(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)),thin_dQ(r,0));
+			fprintf(out4,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,sqrt(VR2), sqrt(Vz2),sqrt(Vphi2),O,K,sqrt(VR2)*K/(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)),thin_dQ(r,0), dQ2(r));
 			V[k].x = x ;
 			V[k].y = y ;
 			V[k].z = z;
