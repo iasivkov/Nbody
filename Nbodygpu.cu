@@ -13,7 +13,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 //ядро для подсчета взаимодействия
 __device__ float4
-bodyBodyInteraction(float4 bi, float4 bj, float4 ai, int NforDisc, int NforHalo, int NforBulge, int tile, int p)
+bodyBodyInteraction(float4 bi, float4 bj, float4 ai, int NforDisc, int NforHalo, int NforBulge,
+float eps_for_disk, float eps_for_halo, float eps_for_bulge, float eps_for_sat, int tile, int p)
 {
 	float3 r;
 	int gtid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -87,13 +88,15 @@ bodyBodyInteraction(float4 bi, float4 bj, float4 ai, int NforDisc, int NforHalo,
 
 //подсчет тайла
 __device__ float4
-tile_calculation(float4 myPosition, float4 accel,float4 *shPos, int NforDisc, int NforHalo, int NforBulge, int tile, int p)
+tile_calculation(float4 myPosition, float4 accel,float4 *shPos, int NforDisc, int NforHalo, int NforBulge,
+				float eps_for_disk, float eps_for_halo, float eps_for_bulge, float eps_for_sat, int tile, int p)
 {
 
 	int i;
 	
 	for (i = 0; i < blockDim.x; i++) {
-	accel = bodyBodyInteraction(myPosition,  shPos[i], accel, NforDisc,  NforHalo,  NforBulge, tile, p); 
+	accel = bodyBodyInteraction(myPosition,  shPos[i], accel, NforDisc,  NforHalo,  NforBulge,
+	eps_for_disk, eps_for_halo, eps_for_bulge, eps_for_sat, tile, p); 
 }
 return accel;
 }
@@ -104,7 +107,9 @@ return accel;
 //подсчет ускорения
 
  void __global__ 
-calculate_forces(float4 *devX, float4 *devA,float4 *devV, float4 *globalX, float4 *globalA, float4 *globalV, int N, int p, float timeStep,int NforDisc,int NforHalo,int NforBulge)
+calculate_forces(float4 *devX, float4 *devA,float4 *devV, float4 *globalX, float4 *globalA,
+				float4 *globalV, int N, int p, float timeStep,int NforDisc,int NforHalo,int NforBulge,
+				float eps_for_disk, float eps_for_halo, float eps_for_bulge, float eps_for_sat)
 {
 
 __shared__ float4 shPosition[512];
@@ -125,7 +130,8 @@ for (i = 0, tile = 0; i < N; i += p, tile++)
 
 	__syncthreads();
 	
-	acc = tile_calculation(myPosition, acc, shPosition, NforDisc, NforHalo, NforBulge,tile,p);
+	acc = tile_calculation(myPosition, acc, shPosition, NforDisc, NforHalo, NforBulge,
+	eps_for_disk, eps_for_halo, eps_for_bulge, eps_for_sat,tile,p);
 	__syncthreads();
 }
 
@@ -164,8 +170,7 @@ void Calculate(float timeStep, float4* X, float4* V, float4* A)
 		checkCudaErrors(cudaMemcpy ( devX, X, NParticles * sizeof(float4), cudaMemcpyHostToDevice )); 
 		checkCudaErrors(cudaMemcpy ( devA, A, NParticles * sizeof(float4), cudaMemcpyHostToDevice ));
 		checkCudaErrors(cudaMemcpy( devV, V, NParticles * sizeof(float4), cudaMemcpyHostToDevice ));
-		//printf("Iteration %f,\t%f\t\n", A[1].z,A[1].w);
-		//printf("Velocity %f,\t%f\t%f\n", V[1000].x,V[1000].y,V[1000].z);
+
 		// вычисляем новую скорость и позицию
 	
 		//cudaPrintfInit(25600000);
@@ -174,7 +179,9 @@ void Calculate(float timeStep, float4* X, float4* V, float4* A)
 		printf("Velocity %f,\t%f\t%f\n", V[1000].x,V[1000].y,V[1000].z);
 		printf("Position %f,\t%f\t%f\n", X[1000].x,X[1000].y,X[1000].z);
 		
-		calculate_forces<<<dim3((int)NParticles/BLOCK_SIZE),dim3(BLOCK_SIZE)>>> ( devX,  devA, devV, newX, newA, newV, NParticles, BLOCK_SIZE ,timeStep, NforDisc, NforHalo, NforBulge);
+		calculate_forces<<<dim3((int)NParticles/BLOCK_SIZE),dim3(BLOCK_SIZE)>>> ( devX,  devA, devV, newX, newA, newV,
+		NParticles, BLOCK_SIZE ,timeStep, NforDisc, NforHalo, NforBulge,
+		eps_for_disk, eps_for_halo, eps_for_bulge, eps_for_sat);
 		printf("Tam-pam:", cudaGetErrorString(cudaPeekAtLastError()));
 		cudaError_t f = cudaDeviceSynchronize();
 		printf("Velocity %s\n",  cudaGetErrorString( f ));
@@ -182,7 +189,6 @@ void Calculate(float timeStep, float4* X, float4* V, float4* A)
 		cudaMemcpy ( X, newX, NParticles * sizeof(float4), cudaMemcpyDeviceToHost ); 
 		cudaMemcpy ( A, newA, NParticles * sizeof(float4), cudaMemcpyDeviceToHost ); 
 		cudaMemcpy ( V, newV, NParticles * sizeof(float4), cudaMemcpyDeviceToHost );
-		
 		
 		float E=0;
 		for(int i = 0; i<NParticles; i++)
