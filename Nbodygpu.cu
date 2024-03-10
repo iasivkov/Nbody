@@ -32,19 +32,19 @@ bodyBodyInteraction(float4 bi, float4 bj, float4 ai, int NforDisc, int NforHalo,
 
 	if(gtid < NforDisc)
 	{
-		eps = 0.08f;
+		eps = eps_for_disk;
 	}
 	else if(gtid < NforHalo + NforDisc)
 	{
-		eps = 0.4f;
+		eps = eps_for_halo;
 	}
 	else if(gtid < NforHalo + NforDisc + NforBulge)
 	{ 
-		eps = 0.06f;
+		eps = eps_for_bulge;
 	}
 	else 
 	{
-		eps = 0.08f;
+		eps = eps_for_sat;
 	}
 	
 	r.x = bj.x - bi.x;

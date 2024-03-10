@@ -580,8 +580,6 @@ float Rhob_1(float r)
 }
 
 //распределеие гаусса
-
-
 float F(float v,float sig )
 {
 	return  4*PI*pow(2.0*PI*sig*sig,-3.0/2.0)*v*v*exp(-v*v/2.0/sig/sig);
@@ -614,7 +612,6 @@ float gauss(float sig)
 {
 	
 	float v=(2.0*random() - 1.0)*3.0*sig;
-	//if(v < 0.0)t=-1.0;
 	float maxf=1.0/(sig*sqrt(2*PI));
 	float fr=random()*maxf;
 	while(fr>F2(v,sig))
@@ -627,9 +624,6 @@ float gauss(float sig)
     
 }
 
-
-
-
 //функция плотности гало
 float Rhoh(float r)
 {
@@ -639,11 +633,6 @@ float Rhoh_1(float r)
 {
 	return Mh*alpha*sqrt(PI)/2.0/(PI*PI)/rc*exp(-r*r/rc/rc)/(r*r + gam*gam)*PI*4.0*r*r;
 }
-
-
-
-
-
 
 //распределение плотности спутника (Яффе)
 float Rhos(float r)
@@ -711,44 +700,12 @@ float sigma2_b(float r,int k)
 	
 }
 
-//sigma^2
-/*
-float sigma2(float r,int p)
-{	
-	float sum=0;
-	if(p>R)p=R;
 
-	//if(r < 4.0*h/3.0 && p==1) sum =( Rhoh(r) * G * fabsf(Q3(r))/r + Rhoh(R) * G * fabsf(Q3(R))/R)/2.0; 
-	if(p==1) sum =( Rhoh(r)  * (-Q3(r))/r + Rhoh(R) *  (-Q3(R))/R)/2.0;
-	//if(p==1) sum =( Rhoh(r)  * (dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhoh(R) *  (dQ(R,X[k].z))/2.0;
-    if(p==2) sum =( Rhob(r)  * (-Q(r))/r + Rhob(R) *  (-Q(R))/R)/2.0;
-	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
-	
-	int n = 100;
-	
-	for(int i=1; i<n;i++)
-	{
-		//if(r < 4.0*h/3.0 && p==1) sum += Rhoh(i*(R-r)/n + r) * G * fabsf(Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==1) sum += Rhoh(i*(R-r)/n + r)  * (-Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		//if(p==1) sum += Rhoh(i*(R-r)/n + r)  * dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z);
-		if(p==2) sum += Rhob(i*(R-r)/n + r) * (-Q(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==3) sum += Rhos(i*(Rs-r)/n + r) * (-Qs(i*(Rs-r)/n + r))/(i*(Rs-r)/n + r);
-	}
-		//printf("\n\n%f\n",1.0/Rhoh(r) * sum * (R-r)/n);
-	if(p == 1) return 1.0/Rhoh(r) * sum * (R-r)/n;
-	if(p == 2)  return 1.0/Rhob(r) * sum * (R-r)/n;
-	if(p == 3) return 1.0/Rhos(r) * sum * (Rs-r)/n;
-	
-}
-*/
 float sigma2(float r,int p)
 {	
 	float sum=0;
 	
-
-	//if(r < 4.0*h/3.0 && p==1) sum =( Rhoh(r) * G * fabsf(Q3(r))/r + Rhoh(R) * G * fabsf(Q3(R))/R)/2.0; 
 	if(p==1) sum =( Rhoh(r)  * (-Q3(r))/r + Rhoh(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
-	
 	if(p==2) sum =( Rhob_1(r)  * (-Q3(r))/r + Rhob_1(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
 	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
@@ -758,7 +715,7 @@ float sigma2(float r,int p)
 	
 	for(int i=1; i<n;i++)
 	{
-		//if(r < 4.0*h/3.0 && p==1) sum += Rhoh(i*(R-r)/n + r) * G * fabsf(Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
+
 		if(p==1)
 		{	
 		
@@ -793,13 +750,10 @@ float sigma2(float r,int p)
 	
 }
 
-float sigma2(float r,int p, int k)
+/*float sigma2(float r,int p, int k)
 {	
 	float sum=0;
 	
-
-	//if(r < 4.0*h/3.0 && p==1) sum =( Rhoh(r) * G * fabsf(Q3(r))/r + Rhoh(R) * G * fabsf(Q3(R))/R)/2.0; 
-	//if(p==1) sum =( Rhoh(r)  * (-Q3(r))/r + Rhoh(R) *  (-Q3(R))/R)/2.0;
 	if(p==1) sum =( Rhoh(r)  * (thin_dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhoh(R) *  (thin_dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQ2(r) + Rhoh(R) *  dQtot(R))/2.0;
     if(p==2) sum =( Rhob(r)  * (thin_dQ(sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z))/r + Rhob(R) *  (thin_dQ(R,X[k].z)))/2.0 + ( Rhoh(r)  * dQtot(r) + Rhoh(R) *  dQtot(R))/2.0;
 	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
@@ -825,11 +779,7 @@ float sigma2(float r,int p, int k)
 		}
 	
 }
-
-
-
-
-
+*/
 
 // начальное распределение частиц диска, гало, балджа
 void    InitParticles()
@@ -902,36 +852,18 @@ void    InitParticles()
 		//printf("%i\t%i\t%i",k, NforDisc, NParticles);
 		if(k<NforDisc)
 		{	
-			float Mum2 = 0.367*Md;
+			float Mum2 = 0.3678*Md/h;
 			//float Mum2 = 3.0/8.0*Md;
 			phi = random()*2.0*PI;
 			r = random()*R*h;
-			z = (random()*2.0 - 1.0) * R;
-
-			
-		/*	Mur = random()* Mum2;
+			z = (random()*2.0 - 1.0) * R*z0;
 		
-			while( Mur > Rhod(r)*Sech(z) )
-			{
-				//phi = random()*2*PI;		
-				r = random()*R;
-				z = (random()*2.0 - 1.0) * R;
-				Mur = random() * Mum2;
-			
-			}
-		*/
-			
 			Mur = random()* Mum2;
 		
 			while( Mur > Rhod(r) )
 			{
-					
-				
 				r = random()*R*h;
-				
 				Mur = random() * Mum2;
-			//	printf("rho_%i %f\t%f\t%f\n",k,r, Mur,Rhod(r));
-			
 			}
 			
 			float Mumd=Sech(0.0);
@@ -940,7 +872,6 @@ void    InitParticles()
 			{
 				z = (random()*2.0 - 1.0) * R;
 				Mur = random() * Mumd;
-				//printf("rho_%i %f\t%f\t%f\n",k,r, Mur,Rhod(r));
 			}
 			
 			
@@ -956,14 +887,8 @@ void    InitParticles()
 			X[k].w = Md * 1.0/NforDisc;
 			A[k].w = 0.0;
 			
-			
-			//printf("%f\t%f\t%f\t%f", Mumd, Mur, r, z);
-			
 			int l = 0.35*r/R*10000;
-			//int l2=r*0.35/R*10000;
-			
-			//Bin3[l2] += X[k].w;
-			//if(r==R)l=999;
+
 			if(10000-l<=3)
 			{
 				for(int i=-3;i<10000-l;i++)
@@ -971,9 +896,6 @@ void    InitParticles()
 				int m=(l  + i);
 				
 				 Bin[m] +=X[k].w/(3.0 + 10000.0 - l);
-
-				//if(r>0.35*h*4.0)Bin3[l] += X[k].w/(3.0 + 10000.0 - l);
-				//Bin3[l2] += X[k].w/(3.0 + 10000.0 - l);
 				
 				}
 			}
@@ -984,9 +906,6 @@ void    InitParticles()
 				{	
 					int m=(l + i);
 					Bin[m] += X[k].w/(l + 1.0 + 3.0 );
-					//if(r>0.35*h*4.0) Bin3[l] += X[k].w/(l + 1.0 + 3.0 );
-					//Bin3[l2] += X[k].w/(l + 1.0 + 3.0 );
-					
 				}
 			}
 			else
@@ -996,16 +915,8 @@ void    InitParticles()
 					int m=(l  + i);
 					Bin[m] +=  X[k].w/7.0;
 
-					//if(r>0.35*h*4.0)Bin3[l] += X[k].w/7.0;
-					//Bin3[l2] += X[k].w/7.0;
 				}
 			}
-			
-			//int l3=fabsf(r-rabs)/Rs*1000;
-			//if(l3==1000)l3=999;
-			//Bin5[l]+=X[k].w;
-			//Bin[l] += X[k].w;
-			//if(l3<1000)Bin4[l3] += X[k].w;
 			
 		}
 		if(k >= NforDisc && k < (NforHalo + NforDisc)&& NforHalo != 0)
@@ -1487,30 +1398,14 @@ void    InitParticles()
 			float VR = gauss(sqrt(VR2));
 			float Vphi = gauss(sqrt(Vphi2));
 
-			//printf("while %f %f %f\n",Vphis,VR,Vphi);
-
-
-
-		//	if(O*r*O*r + VR2 * (1 - K * K /(4.0 * O * O) - 2*r/h)<0.0)printf("test %f\t%f\n",r,O*r*O*r + VR2 * (1 - K * K /(4.0 * O * O) - 2*r/h));
-			//if(3.0*(dQ2(r,0) + dQtot(r))/r + (ddQ2(r,0) + ddQtot(r))<0.0)printf("K %f\t%f\n",r, 3.0*(dQ2(r,0) + dQtot(r))/r + (ddQ2(r,0) + ddQtot(r)));
-			//if(_isnan(Vphis))printf("O %f\t%f\n",r,dQ2(r,0)*r);
-			
-			
-
 			x = -(Vphis + Vphi)*X[k].y/r - VR*X[k].x/r ;
 			y = (Vphis + Vphi)*X[k].x/r - VR*X[k].y/r ;
 			z = Vz;
-			//float vm = sqrtf((Vphis + Vphi) *(Vphis + Vphi)  + Vz * Vz + VR * VR);
 			float v = sqrt(x * x + y * y + z * z); 
-			//if(_isnan(v))printf("while%i %f \n",k,v);
-		
-		
-			//printf("test %f\t%f\t%f\n",r ,v,Q2(r));
-			//printf("test %f\t%f\n",r ,dQ(14.5,0));
-			//sqrt(VR2)*K/(3.36 * G * rho0 * 2.0 * z0 * exp(-r/h))
+
 			if (!is_valid(x) && !is_valid(y))
 			{
-				printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,O, K,thin_dQ(r,0),dQtot(r),thin_ddQ(r,0),ddQtot(r),3.0*(thin_dQ(r,0) + dQtot(r))/r + (thin_ddQ(r,0) + ddQtot(r)));}
+				printf("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,O, K,thin_dQ(r,0),dQ(r),thin_ddQ(r,0),ddQ2(r),3.0*(thin_dQ(r,0) + dQ2(r))/r + (thin_ddQ(r,0) + ddQ2(r)));}
 			fprintf(out4,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", r,sqrt(VR2), sqrt(Vz2),sqrt(Vphi2),O,K,sqrt(VR2)*K/(3.36 * G * Md/(2.0*PI*h*h)* exp(-r/h)),thin_dQ(r,0));
 			V[k].x = x ;
 			V[k].y = y ;
