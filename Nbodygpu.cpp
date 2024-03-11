@@ -61,9 +61,9 @@ float	G = 1.0;
 float4 *X;
 float4 *A;
 float4 *V;
-float Bin[10000];
-float Bin2[10000];
-float Bin3[10000];
+float Bin[bin_num];
+float Bin2[bin_num];
+float Bin3[bin_num];
 float Bin4[1000];
 float Bin5[100000];
 float Bin6[30000];
@@ -705,9 +705,9 @@ float sigma2(float r,int p)
 {	
 	float sum=0;
 	
-	if(p==1) sum =( Rhoh(r)  * (-Q3(r))/r + Rhoh(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
-	if(p==2) sum =( Rhob_1(r)  * (-Q3(r))/r + Rhob_1(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
-	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
+	if(p==1) sum =( Rhoh(r)  * dQ(r)  + Rhoh(10.0*R) *  dQ(r))/2.0;
+	if(p==2) sum =( Rhob_1(r)  * (-Q(r))/r + Rhob_1(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
+	if(p==3) sum = ( Rhos(r)  * (-Q(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
 	int n;
 	if(p==1)n = 10000;
@@ -719,14 +719,14 @@ float sigma2(float r,int p)
 		if(p==1)
 		{	
 		
-			if(i*(10*R-r)/n + r > R) sum += Rhoh(i*(10.0*R-r)/n + r)  * (-Q3(R)/(i*(10.0*R-r)/n + r));
-			else { sum += Rhoh(i*(10.0*R-r)/n + r)  * (-Q3(i*(10.0*R-r)/n + r))/(i*(10.0*R-r)/n + r);}
+			if(i*(10*R-r)/n + r > R) sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ(R);
+			else { sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ(i*(10.0*R-r)/n + r);}
 		}
 		if(p==2)
 		{	
 			
-			if(i*(10*R-r)/n + r > R){sum += Rhob_1(i*(10.0*R-r)/n + r)  * (-Q3(R)/(i*(10.0*R-r)/n + r));}
-			else { sum += Rhob_1(i*(10.0*R-r)/n + r)  * (-Q3(i*(10.0*R-r)/n + r))/(i*(10.0*R-r)/n + r);}
+			if(i*(10*R-r)/n + r > R) sum += Rhob_1(i*(10.0*R-r)/n + r)  * dQ(R);
+			else { sum += Rhob_1(i*(10.0*R-r)/n + r)  * dQ(i*(10.0*R-r)/n + r);}
 			
 			 //sum += Rhob(i*(10.0*R-r)/n + r)  * (dQb(i*(10.0*R-r)/n + r));
 		}
@@ -887,34 +887,38 @@ void    InitParticles()
 			X[k].w = Md * 1.0/NforDisc;
 			A[k].w = 0.0;
 			
-			int l = 0.35*r/R*10000;
+			int l = 0.35*r/R*bin_num;
 
-			if(10000-l<=3)
+			int l5 = r/R*100000;
+			int smooth_bin_num = eps_for_disk/(R*bin_num);
+			Bin5[l5] += X[k].w;
+
+			if(r==R)l=bin_num-1;
+			
+			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-3;i<10000-l;i++)
+				for(int i=-smooth_bin_num;i<bin_num-l;i++)
 				{	
-				int m=(l  + i);
-				
-				 Bin[m] +=X[k].w/(3.0 + 10000.0 - l);
-				
+				int m=(l + i);
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
 				}
 			}
-			else if(l < 3)
+			else if(l<smooth_bin_num)
 			{
 			
-				for(int i=-l;i<=3;i++)
+				for(int i=-l;i<=smooth_bin_num;i++)
 				{	
 					int m=(l + i);
-					Bin[m] += X[k].w/(l + 1.0 + 3.0 );
+					Bin[m] += X[k].w/(l + 1.0 + smooth_bin_num);
 				}
 			}
 			else
 			{
-				for(int i=-3;i<=3;i++)
+				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
-					int m=(l  + i);
-					Bin[m] +=  X[k].w/7.0;
-
+					int m=(l + i);
+					Bin[m] += X[k].w/2.0/smooth_bin_num;
+			
 				}
 			}
 			
@@ -946,58 +950,48 @@ void    InitParticles()
 			X[k].w = Mh * 1.0/NforHalo;
 			A[k].w = 0.0;
 			
-			int l=r/R*10000;
+			int l=r/R*bin_num;
 			int lh=r/25.0*128;
-
+			int smooth_bin_num = eps_for_halo/R/(float)bin_num;
 			int l6;
 			l6=(int)(r/R*30000.0);
 			//printf("halo: %f\t%i",r/R*30000.0,l6);
 			Bin6[l6] +=1.0;
 
 
-			if(r==R)l=999;
-			//printf("Mumb %d\t%f\t%f\n",l, r , r/R);
-			//int l3=fabsf(r-rabs)/Rs*1000;
-			//if(l3==1000)l3=999;
+			if(r==R)l=bin_num-1;
 			
-			if(10000-l<=8)
+			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-8;i<10000-l;i++)
+				for(int i=-smooth_bin_num;i<bin_num-l;i++)
 				{	
-				int l=(r/R*10000  + i);
+				int m=(l + i);
 			
-
-				Bin[l] += X[k].w/(8.0 + 10000.0 - l);
-				Bin2[l] += X[k].w/(8.0 + 10000.0 - l);
-				Bin3[l] += X[k].w/(8.0 + 10000.0 - l);
-			
-
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l);
 				}
 			}
-			else if(l<8)
+			else if(l<smooth_bin_num)
 			{
 			
-				for(int i=-l;i<=8;i++)
+				for(int i=-l;i<=smooth_bin_num;i++)
 				{	
-					int l=(r/R*10000  + i);
-				
-
-					Bin[l] += X[k].w/(l + 1.0 + 8.0 );
-					Bin2[l] += X[k].w/(l + 1.0 + 8.0 );
-					Bin3[l] += X[k].w/(l + 1.0 + 8.0 );
+					int m=(l + i);
+					Bin[m] += X[k].w/(l + 1.0 + smooth_bin_num);
+					Bin2[m] += X[k].w/(l + 1.0 + smooth_bin_num);
+					Bin3[m] += X[k].w/(l + 1.0 + smooth_bin_num);
 				
 				}
 			}
 			else
 			{
-				for(int i=-8;i<=8;i++)
+				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
-					int l=(r/R*10000  + i);
-			
-
-					Bin[l] += X[k].w/17.0;
-					Bin2[l] += X[k].w/17.0;
-					Bin3[l] += X[k].w/17.0;
+					int m=(l + i);
+					Bin[m] += X[k].w/2.0/smooth_bin_num;
+					Bin2[m] += X[k].w/2.0/smooth_bin_num;
+					Bin3[m] += X[k].w/2.0/smooth_bin_num;
 			
 				}
 			}
@@ -1106,48 +1100,45 @@ void    InitParticles()
 			X[k].w = Mb * 1.0/NforBulge;
 			A[k].w = 0.0;
 			
-			int l=r/R*10000;
+			int l=r/R*bin_num;
 			int l5 = r/R*100000;
-
+			int smooth_bin_num = eps_for_bulge/(R*bin_num);
 			Bin5[l5] += X[k].w;
 
 			
-			if(10000-l<=2)
+			if(r==R)l=bin_num-1;
+			
+			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-2;i<10000-l;i++)
+				for(int i=-smooth_bin_num;i<bin_num-l;i++)
 				{	
-				int l=(r/R*10000  + i);
+				int m=(l + i);
 			
-
-				Bin[l] += X[k].w/(2.0 + 10000.0 - l);
-				Bin2[l] += X[k].w/(2.0 + 10000.0 - l);
-				Bin3[l] += X[k].w/(2.0 + 10000.0 - l);
-			
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l);
 				}
 			}
-			else if(l<2)
+			else if(l<smooth_bin_num)
 			{
 			
-				for(int i=-l;i<=2;i++)
+				for(int i=-l;i<=smooth_bin_num;i++)
 				{	
-					int l=(r/R*10000  + i);
-			
-
-					Bin[l] += X[k].w/(l + 1.0 + 2.0 );
-					Bin2[l] += X[k].w/(l + 1.0 + 2.0 );
-					Bin3[l] += X[k].w/(l + 1.0 + 2.0 );
+					int m=(l + i);
+					Bin[m] += X[k].w/(l + 1.0 + smooth_bin_num);
+					Bin2[m] += X[k].w/(l + 1.0 + smooth_bin_num);
+					Bin3[m] += X[k].w/(l + 1.0 + smooth_bin_num);
 				
 				}
 			}
 			else
 			{
-				for(int i=-2;i<=2;i++)
+				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
-					int l=(r/R*10000 + i);
-					
-					Bin[l] += X[k].w/5.0;
-					Bin2[l] += X[k].w/5.0;
-					Bin3[l] += X[k].w/5.0;
+					int m=(l + i);
+					Bin[m] += X[k].w/2.0/smooth_bin_num;
+					Bin2[m] += X[k].w/2.0/smooth_bin_num;
+					Bin3[m] += X[k].w/2.0/smooth_bin_num;
 			
 				}
 			}

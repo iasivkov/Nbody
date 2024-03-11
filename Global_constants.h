@@ -6,6 +6,9 @@ const int NforBulge = 16384;
 const int NforHalo = 16384;
 const int NforSatellite = 0;
 const int NParticles = (NforDisc + NforHalo + NforBulge + NforSatellite);
+
+static const int bin_num = 10000;
+
 static const int BLOCK_SIZE=512;
 const float eps_for_disk = 0.08;
 const float eps_for_halo = 0.4;
