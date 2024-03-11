@@ -118,84 +118,47 @@ float Phi(float r)
 //-----------------------------------------------------------------------------
 float Q(float r)
 {			
-	
-			//гало, балдж, диск все компоненты
-			//if(r<0.01)return -r;
-			float step = R*0.0001;
-			int L=r/step;
-			
-			float sum = 0;
-			for(int i = 0; i<=L; i++)
-				{
-					sum += Bin[i];
-				}
-			return -G*sum/((L+1.0)*step);
-		
-	
-
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
+	int L=r/step;
+	return -G*Bin[L]/((L+1.0)*step);
 	
 }
 
 float dQ(float r)
 {			
-	//гало, балдж
-	float step = R*0.0001;
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
 	int L=r/step;
-
-	float sum=0.0;
-	for(int i = 0; i<=L; i++)
-	{
-		sum += Bin[i];
-	}
-	return G*sum/((L+1.0)*step)/((L+1.0)*step);
-
+	return G*Bin[L]/((L+1.0)*step)/((L+1.0)*step);
 	
 }
 
 float ddQ(float r)
 {			
-	//гало, балдж
-	float step = R*0.0001;
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
 	int L=r/step;
 
-		float sum=0.0;
-	for(int i = 0; i<=L; i++)
-	{
-		sum += Bin[i];
-	}
+	return -2*G*Bin[L]/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
 
-	return -2*G*sum/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
-
-	
 }
 
 float Q2(float r)
 {			
 	//гало, балдж
-	float step = R*0.0001;
+	float step = R/bin_num;
 	int L=r/step;
-	float sum=0.0;
-	for(int i = 0; i<=L; i++)
-	{
-		sum += Bin2[i];
-	}
-	return -G*sum/((L+1.0)*step);
-
+	return -G*Bin2[L]/((L+1.0)*step);
 	
 }
 
 float dQ2(float r)
 {			
 	//гало, балдж
-	float step = R*0.0001;
+	float step = R/bin_num;
 	int L=r/step;
-
-	float sum=0.0;
-	for(int i = 0; i<=L; i++)
-	{
-		sum += Bin2[i];
-	}
-	return G*sum/((L+1.0)*step)/((L+1.0)*step);
+	return G*Bin2[L]/((L+1.0)*step)/((L+1.0)*step);
 
 	
 }
@@ -205,12 +168,7 @@ float ddQ2(float r)
 	//гало, балдж
 	float step = R*0.0001;
 	int L=r/step;
-	float sum=0.0;
-	for(int i = 0; i<=L; i++)
-	{
-		sum += Bin2[i];
-	}
-	return -2*G*sum/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
+	return -2*G*Bin2[L]/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
 
 	
 }
@@ -218,20 +176,10 @@ float ddQ2(float r)
 float Q3(float r)
 {			
 	
-			float step = R*0.0001;
-			//if(r<0.01)return -r;
+			float step = R/bin_num;
 			int L=r/step;
-			//if(r == R)L=9999;
-			//r=(L+1.0)*R/10000.0;
-			//float sum = 0;
-			/*for(int i = 0; i<=L; i++)
-				{
-					sum += Bin3[i];
-				}*/
 			return -G*Bin3[L]/((L+1.0)*step);
 		
-
-	
 }
 
 float Qs(float r)
@@ -890,7 +838,7 @@ void    InitParticles()
 			int l = 0.35*r/R*bin_num;
 
 			int l5 = r/R*100000;
-			int smooth_bin_num = eps_for_disk/(R*bin_num);
+			int smooth_bin_num = bin_num*eps_for_disk/R;
 			Bin5[l5] += X[k].w;
 
 			if(r==R)l=bin_num-1;
@@ -952,7 +900,7 @@ void    InitParticles()
 			
 			int l=r/R*bin_num;
 			int lh=r/25.0*128;
-			int smooth_bin_num = eps_for_halo/R/(float)bin_num;
+			int smooth_bin_num = bin_num*eps_for_halo/R;
 			int l6;
 			l6=(int)(r/R*30000.0);
 			//printf("halo: %f\t%i",r/R*30000.0,l6);
@@ -1072,39 +1020,26 @@ void    InitParticles()
 			  Mur = random()*Mumb;
 
 			}
-			
-		
-			
 
-		//	r=r/2.0;
 			phi = phi = random()*2.0*PI;;
 			teta = asin(random()*2.0 - 1.0);
 
-		
 			X[k].x = r * cos(phi)*cos(teta); 
 			A[k].x = 0.0;
-			
-			
         
 			X[k].y = r * sin(phi)*cos(teta);
 			A[k].y = 0.0;
            
-			
-			
 			X[k].z = r * sin(teta);
 			A[k].z = 0.0;
-			
-			
-			
 			
 			X[k].w = Mb * 1.0/NforBulge;
 			A[k].w = 0.0;
 			
 			int l=r/R*bin_num;
 			int l5 = r/R*100000;
-			int smooth_bin_num = eps_for_bulge/(R*bin_num);
+			int smooth_bin_num = bin_num*eps_for_bulge/R;
 			Bin5[l5] += X[k].w;
-
 			
 			if(r==R)l=bin_num-1;
 			
@@ -1238,8 +1173,6 @@ void    InitParticles()
 	}
 	fclose(out7);
 	
-   
-
    	system("pause");
 	float ref = 0.0;
 	int numref = 0;
@@ -1293,17 +1226,22 @@ void    InitParticles()
 	float vr = 0;
 	
 
-	for(int i = 1; i<10000; i++)
+	for(int i = 1; i<bin_num; i++)
 			{
 				
 				Bin[i]+=Bin[i-1];
 			}
-	for(int i = 1; i<10000; i++)
+	for(int i = 1; i<bin_num; i++)
+			{
+				
+				Bin2[i]+=Bin2[i-1];
+			}
+	for(int i = 1; i<bin_num; i++)
 			{
 				
 				Bin3[i]+=Bin3[i-1];
 			}
-	for(int i = 1; i<100000; i++)
+	for(int i = 1; i<bin_num; i++)
 			{
 				
 				Bin5[i]+=Bin5[i-1];
@@ -1632,10 +1570,10 @@ int  main(int argc, char *argv[])
 	
     FILE * out = fopen(FileName, "w+");
 
-	for (int i=0; i<1000; i++)
+	for (int i=0; i<bin_num; i++)
     {
         
-		fprintf(out," %f\n", Bin[i]);
+		fprintf(out,"%f\t%f\t%f\n", Bin[i], Bin2[i], Bin3[i]);
         
     }
 	
