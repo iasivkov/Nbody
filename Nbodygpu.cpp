@@ -706,8 +706,8 @@ float sigma2(float r,int p)
 	float sum=0;
 	
 	if(p==1) sum =( Rhoh(r)  * dQ(r)  + Rhoh(10.0*R) *  dQ(r))/2.0;
-	if(p==2) sum =( Rhob_1(r)  * (-Q(r))/r + Rhob_1(10.0*R) *  (-Q3(R))/10.0/R)/2.0;
-	if(p==3) sum = ( Rhos(r)  * (-Q(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
+	if(p==2) sum =( Rhob_1(r)  * dQ(r) + Rhob_1(10.0*R) *  dQ(R))/2.0;
+	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
 	int n;
 	if(p==1)n = 10000;
