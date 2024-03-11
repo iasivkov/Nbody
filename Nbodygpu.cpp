@@ -147,18 +147,16 @@ float ddQ(float r)
 float Q2(float r)
 {			
 	//гало, балдж
-	float step = R/bin_num;
-	int L=r/step;
-	return -G*Bin2[L]/((L+1.0)*step);
+	int L=r/R*bin_num;
+	return -G*Bin2[L]/((L+1)*R/bin_num);
 	
 }
 
 float dQ2(float r)
 {			
 	//гало, балдж
-	float step = R/bin_num;
-	int L=r/step;
-	return G*Bin2[L]/((L+1.0)*step)/((L+1.0)*step);
+	int L=r/R*bin_num;
+	return G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num);
 
 	
 }
@@ -166,9 +164,8 @@ float dQ2(float r)
 float ddQ2(float r)
 {			
 	//гало, балдж
-	float step = R*0.0001;
-	int L=r/step;
-	return -2*G*Bin2[L]/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
+	int L=r/R*bin_num;
+	return -2*G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num)/((L+1)*R/bin_num);
 
 	
 }
@@ -301,7 +298,7 @@ float thin_ddQ(float r, float z)
 	(
 		alglib::besseli1(r/(2*h))*(r*alglib::besselk0(r/(2*h)) + h*alglib::besselk1(r/(2*h)))
 		+ alglib::besseli0(r/(2*h))*(h*alglib::besselk0(r/(2*h)) - r*alglib::besselk1(r/(2*h)))
-	);
+	)/h;
 }
 
 double Qd(double r,double z)
@@ -845,10 +842,10 @@ void    InitParticles()
 			
 			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-smooth_bin_num;i<bin_num-l;i++)
+				for(int i=-smooth_bin_num;i<=bin_num-l;i++)
 				{	
 				int m=(l + i);
-				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l +1 );
 				}
 			}
 			else if(l<smooth_bin_num)
@@ -865,7 +862,7 @@ void    InitParticles()
 				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
 					int m=(l + i);
-					Bin[m] += X[k].w/2.0/smooth_bin_num;
+					Bin[m] += X[k].w/(2.0*smooth_bin_num+1);
 			
 				}
 			}
@@ -911,13 +908,13 @@ void    InitParticles()
 			
 			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-smooth_bin_num;i<bin_num-l;i++)
+				for(int i=-smooth_bin_num;i<=bin_num-l;i++)
 				{	
 				int m=(l + i);
 			
-				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
-				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l);
-				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l + 1);
+				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l + 1);
+				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l + 1);
 				}
 			}
 			else if(l<smooth_bin_num)
@@ -937,9 +934,9 @@ void    InitParticles()
 				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
 					int m=(l + i);
-					Bin[m] += X[k].w/2.0/smooth_bin_num;
-					Bin2[m] += X[k].w/2.0/smooth_bin_num;
-					Bin3[m] += X[k].w/2.0/smooth_bin_num;
+					Bin[m] += X[k].w/(2.0*smooth_bin_num+1);
+					Bin2[m] += X[k].w/(2.0*smooth_bin_num+1);
+					Bin3[m] += X[k].w/(2.0*smooth_bin_num+1);
 			
 				}
 			}
@@ -1045,13 +1042,13 @@ void    InitParticles()
 			
 			if(bin_num-l<=smooth_bin_num)
 			{
-				for(int i=-smooth_bin_num;i<bin_num-l;i++)
+				for(int i=-smooth_bin_num;i<=bin_num-l;i++)
 				{	
 				int m=(l + i);
 			
-				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l);
-				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l);
-				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l);
+				Bin[m] += X[k].w/(smooth_bin_num + bin_num - l +1);
+				Bin2[m] += X[k].w/(smooth_bin_num + bin_num - l +1);
+				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - l +1);
 				}
 			}
 			else if(l<smooth_bin_num)
@@ -1071,9 +1068,9 @@ void    InitParticles()
 				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
 				{	
 					int m=(l + i);
-					Bin[m] += X[k].w/2.0/smooth_bin_num;
-					Bin2[m] += X[k].w/2.0/smooth_bin_num;
-					Bin3[m] += X[k].w/2.0/smooth_bin_num;
+					Bin[m] += X[k].w/(2.0*smooth_bin_num+1);
+					Bin2[m] += X[k].w/(2.0*smooth_bin_num+1);
+					Bin3[m] += X[k].w/(2.0*smooth_bin_num+1);
 			
 				}
 			}
@@ -1366,7 +1363,7 @@ void    InitParticles()
 			
 			float VR2 = sigma2(r,1);
 			
-			float Vesc = sqrtf(fabs(2.0*Phi(r))); 
+			float Vesc = sqrtf(fabs(2.0*Q(r))); 
 			
 			vr = veldistr(4.0*sqrtf(VR2),sqrtf(VR2));
 		
@@ -1412,7 +1409,7 @@ void    InitParticles()
 					
 		
 				
-			float Vesc = sqrtf(fabs(2.0*Q5(r)));
+			float Vesc = sqrtf(fabs(2.0*Q(r)));
 			vr = veldistr(4.0*sqrtf(VR2),sqrtf(VR2));
 			
 			while(vr > 0.95 * Vesc)
@@ -1573,7 +1570,7 @@ int  main(int argc, char *argv[])
 	for (int i=0; i<bin_num; i++)
     {
         
-		fprintf(out,"%f\t%f\t%f\n", Bin[i], Bin2[i], Bin3[i]);
+		fprintf(out,"%f\t%f\t%f\n", Bin[i], Bin2[i], Bin3[i], Bin3[i]/((i+1)*R/bin_num)/((i+1)*R/bin_num)/((i+1)*R/bin_num));
         
     }
 	
