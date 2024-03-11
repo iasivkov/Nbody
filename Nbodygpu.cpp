@@ -345,11 +345,11 @@ void disk_potential_second_derivation(double k, double xminusa, double bminusx, 
 
 float thin_dQ(float r, float z)
 {
-	return 4*PI*G*rho0*r/(2*h)*(alglib::besseli0(r/(2*h))*alglib::besselk0(r/(2*h)) - alglib::besseli1(r/(2*h))*alglib::besselk1(r/(2*h)));
+	return 4*PI*G*rho0_thin*r/(2*h)*(alglib::besseli0(r/(2*h))*alglib::besselk0(r/(2*h)) - alglib::besseli1(r/(2*h))*alglib::besselk1(r/(2*h)));
 }
 float thin_ddQ(float r, float z)
 {
-	return 4*PI*G*rho0/(2*h)*
+	return 4*PI*G*rho0_thin/(2*h)*
 	(
 		alglib::besseli1(r/(2*h))*(r*alglib::besselk0(r/(2*h)) + h*alglib::besselk1(r/(2*h)))
 		+ alglib::besseli0(r/(2*h))*(h*alglib::besselk0(r/(2*h)) - r*alglib::besselk1(r/(2*h)))
