@@ -749,15 +749,15 @@ void    InitParticles()
 	A = new float4[NParticles];
 	V = new float4[NParticles];
 	
-	for(int i=0; i<10000 ;i++)
+	for(int i=0; i<bin_num; i++)
 	{
 		Bin[i] = 0;
 	}
-	for(int i=0; i<1000 ;i++)
+	for(int i=0; i<bin_num; i++)
 	{
 		Bin2[i] = 0;
 	}
-	for(int i=0; i<10000 ;i++)
+	for(int i=0; i<bin_num; i++)
 	{
 		Bin3[i] = 0;
 	}
