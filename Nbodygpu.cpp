@@ -148,25 +148,25 @@ float Q2(float r)
 {			
 	//гало, балдж
 	int L=r/R*bin_num;
-	return -G*Bin2[L]/((L+1)*R/bin_num);
-	
+	//return -G*Bin2[L]/((L+1)*R/bin_num);
+	return -2*G*Bin2[L]/r;
 }
 
 float dQ2(float r)
 {			
 	//гало, балдж
 	int L=r/R*bin_num;
-	return G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num);
+	//return G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num);
+	return G*Bin2[L]/r/r;
 
-	
 }
 
 float ddQ2(float r)
 {			
 	//гало, балдж
 	int L=r/R*bin_num;
-	return -2*G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num)/((L+1)*R/bin_num);
-
+	//return -2*G*Bin2[L]/((L+1)*R/bin_num)/((L+1)*R/bin_num)/((L+1)*R/bin_num);
+	return -2*G*Bin2[L]/r/r/r;
 	
 }
 
