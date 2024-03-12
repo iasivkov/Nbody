@@ -146,12 +146,22 @@ float vely = devV[gtid].y + globalA[gtid].y * timeStep ;
 float velz = devV[gtid].z + globalA[gtid].z * timeStep ;
 float4 vel4 = {velx, vely, velz, b };
 globalV[gtid] = vel4;
+if(gtid<NforDisc || gtid>=NforHalo)
+{
+	float posx = devX[gtid].x + globalV[gtid].x * timeStep;
+	float posy = devX[gtid].y + globalV[gtid].y * timeStep;
+	float posz = devX[gtid].z + globalV[gtid].z * timeStep;
+	float4 pos = {posx, posy, posz, devX[gtid].w };
+	globalX[gtid] = pos;
+}
+else{
+	float posx = devX[gtid].x;
+	float posy = devX[gtid].y;
+	float posz = devX[gtid].z;
+	float4 pos = {posx, posy, posz, devX[gtid].w };
+	globalX[gtid] = pos;
+}
 
-float posx = devX[gtid].x + globalV[gtid].x * timeStep;
-float posy = devX[gtid].y + globalV[gtid].y * timeStep;
-float posz = devX[gtid].z + globalV[gtid].z * timeStep;
-float4 pos = {posx, posy, posz, devX[gtid].w };
-globalX[gtid] = pos;
 }
 
 //-----------------------------------------------------------------------------
