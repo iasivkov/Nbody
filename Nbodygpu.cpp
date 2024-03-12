@@ -173,10 +173,38 @@ float ddQ2(float r)
 float Q3(float r)
 {			
 	
-			float step = R/bin_num;
-			int L=r/step;
-			return -G*Bin3[L]/((L+1.0)*step);
+	float step = R/bin_num;
+	int L=r/step;
+	return -G*Bin3[L]/((L+1.0)*step);
 		
+}
+
+float Q3(float r)
+{			
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
+	int L=r/step;
+	return -G*Bin3[L]/((L+1.0)*step);
+	
+}
+
+float dQ3(float r)
+{			
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
+	int L=r/step;
+	return G*Bin3[L]/((L+1.0)*step)/((L+1.0)*step);
+	
+}
+
+float ddQ3(float r)
+{			
+	//гало, балдж, диск все компоненты
+	float step = R/bin_num;
+	int L=r/step;
+
+	return -2*G*Bin3[L]/((L+1.0)*step)/((L+1.0)*step)/((L+1.0)*step);
+
 }
 
 float Qs(float r)
@@ -650,7 +678,7 @@ float sigma2(float r,int p)
 {	
 	float sum=0;
 	
-	if(p==1) sum =( Rhoh(r)  * dQ(r)  + Rhoh(10.0*R) *  dQ(r))/2.0;
+	if(p==1) sum =( Rhoh(r)  * dQ3(r)  + Rhoh(10.0*R) *  dQ3(r))/2.0;
 	if(p==2) sum =( Rhob_1(r)  * dQ(r) + Rhob_1(10.0*R) *  dQ(R))/2.0;
 	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
@@ -664,8 +692,8 @@ float sigma2(float r,int p)
 		if(p==1)
 		{	
 		
-			if(i*(10*R-r)/n + r > R) sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ(R);
-			else { sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ(i*(10.0*R-r)/n + r);}
+			if(i*(10*R-r)/n + r > R) sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ3(R);
+			else { sum += Rhoh(i*(10.0*R-r)/n + r)  * dQ3(i*(10.0*R-r)/n + r);}
 		}
 		if(p==2)
 		{	
@@ -704,14 +732,6 @@ float sigma2(float r,int p)
 	if(p==3) sum = ( Rhos(r)  * (-Qs(r))/r + Rhos(Rs) *  (-Qs(Rs))/Rs)/2.0;
 	
 	int n = 100;
-	for(int i=1; i<n;i++)
-	{
-		//if(r < 4.0*h/3.0 && p==1) sum += Rhoh(i*(R-r)/n + r) * G * fabsf(Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		//if(p==1) sum += Rhoh(i*(R-r)/n + r)  * (-Q3(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==1) sum += Rhoh(i*(R-r)/n + r)  * thin_dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhoh(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==2)  sum += Rhob(i*(R-r)/n + r)  * thin_dQ(i*(R-sqrt(X[k].x*X[k].x+X[k].y*X[k].y))/n + sqrt(X[k].x*X[k].x+X[k].y*X[k].y),X[k].z) + Rhob(i*(R-r)/n + r)  * (dQtot(i*(R-r)/n + r))/(i*(R-r)/n + r);
-		if(p==3) sum += Rhos(i*(Rs-r)/n + r) * (-Qs(i*(Rs-r)/n + r))/(i*(Rs-r)/n + r);
-	}
 
 			
 	if(p == 1) return 1.0/Rhoh(r) * sum * (R-r)/n;
@@ -832,13 +852,13 @@ void    InitParticles()
 			X[k].w = Md * 1.0/NforDisc;
 			A[k].w = 0.0;
 			
-			int l = 0.35*r/R*bin_num;
-
+			int l = r/R*bin_num;
+			int lh = 0.65*r/R*bin_num;
+	
 			int l5 = r/R*100000;
 			int smooth_bin_num = bin_num*eps_for_disk/R;
 			Bin5[l5] += X[k].w;
 
-			if(r==R)l=bin_num-1;
 			
 			if(bin_num-l<=smooth_bin_num)
 			{
@@ -866,6 +886,35 @@ void    InitParticles()
 			
 				}
 			}
+
+			if(bin_num-lh<=smooth_bin_num)
+			{
+				for(int i=-smooth_bin_num;i<=bin_num-lh;i++)
+				{	
+				int m=(lh + i);
+				Bin3[m] += X[k].w/(smooth_bin_num + bin_num - lh +1 );
+				}
+			}
+			else if(lh<smooth_bin_num)
+			{
+			
+				for(int i=-lh;i<=smooth_bin_num;i++)
+				{	
+					int m=(lh + i);
+					Bin3[m] += X[k].w/(lh + 1.0 + smooth_bin_num);
+				}
+			}
+			else
+			{
+				for(int i=-smooth_bin_num;i<=smooth_bin_num;i++)
+				{	
+					int m=(lh + i);
+					Bin3[m] += X[k].w/(2.0*smooth_bin_num+1);
+			
+				}
+			}
+
+			
 			
 		}
 		if(k >= NforDisc && k < (NforHalo + NforDisc)&& NforHalo != 0)
@@ -1321,7 +1370,7 @@ void    InitParticles()
 			
 			float VR2 = sigma2(r,1);
 			
-			float Vesc = sqrtf(fabs(2.0*Q(r))); 
+			float Vesc = sqrtf(fabs(2.0*Q3(r))); 
 			
 			vr = veldistr(4.0*sqrtf(VR2),sqrtf(VR2));
 		
@@ -1337,7 +1386,6 @@ void    InitParticles()
 			teta = asin(random()*2.0 - 1.0);
 			
 			//vr=0.0;
-			printf("halo %f\t%f\t%f\t%f\n",r, vr, Phi(r), Q3(r));
 			x = vr * cos(phi)*cos(teta); 
 			y = vr * sin(phi)*cos(teta);
 			z = vr * sin(teta);
