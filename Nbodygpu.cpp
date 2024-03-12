@@ -170,14 +170,6 @@ float ddQ2(float r)
 	
 }
 
-float Q3(float r)
-{			
-	
-	float step = R/bin_num;
-	int L=r/step;
-	return -G*Bin3[L]/((L+1.0)*step);
-		
-}
 
 float Q3(float r)
 {			
