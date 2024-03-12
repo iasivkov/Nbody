@@ -10,8 +10,11 @@ const int NParticles = (NforDisc + NforHalo + NforBulge + NforSatellite);
 static const int bin_num = 5000;
 
 static const int BLOCK_SIZE=512;
+
 const float eps_for_disk = 0.08;
 const float eps_for_halo = 0.4;
 const float eps_for_bulge = 0.06;
 const float eps_for_sat = 0.08;
+
+const int STEPS_NUM = 300;
 #endif

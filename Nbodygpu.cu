@@ -311,7 +311,7 @@ namespace NbodyCu{
 
         cudaEventRecord(start,0);
         
-        for (int i=0; i<500; i++)
+        for (int i=0; i<STEPS_NUM; i++)
         {
             if(i==0) Calculate(TimeStep/2.0, X, V, A);
             else Calculate(TimeStep, X, V, A);
